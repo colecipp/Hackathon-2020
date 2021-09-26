@@ -1,0 +1,97 @@
+import sys
+import os
+import spotipy
+import spotipy.util as util
+import json
+from json.decoder import JSONDecodeError
+import tkinter
+from tkinter import *
+
+
+def comparePlaylists(entry1, entry2):
+    uri1 = entry1.get()
+    uri2 = entry2.get()
+    playlist1 = sp.playlist_tracks(uri1, limit=1000)
+    playlist2 = sp.playlist_tracks(uri2, limit=1000)
+
+    user1List = []
+    for i in range(len(playlist1['items'])):
+        user1List.append(playlist1['items'][i]['track']['name'])
+
+    user2List = []
+    for i in range(len(playlist2['items'])):
+        user2List.append(playlist2['items'][i]['track']['name'])
+
+    listSame = []
+    for i in range(len(user1List)):
+        for j in range(len(user2List)):
+            if(user1List[i] == user2List[j]):
+                listSame.append(user1List[i])
+    print(listSame)
+    return listSame
+
+
+username = 'aoi7fsgjp7ah0mkt6uwk8v8ws'
+scope = 'user-library-read'
+
+try:
+    token = util.prompt_for_user_token(username, scope)
+except:
+    os.remove(f".cache-{username}")
+    token = util.prompt_for_user_token(username)
+
+sp = spotipy.Spotify(auth=token)
+
+
+JoeDPlaylist = 'spotify:playlist:110TytrnsmP3oe540B4ebG'
+AJPlaylist = 'spotify:playlist:4mCKHUwmIjyouzBev3R6KW'
+
+
+
+m = tkinter.Tk()
+l1= tkinter.Label(m, text='Enter playist ID #1: ').grid(row=0)
+l2 = tkinter.Label(m, text='Enter playist ID #2: ').grid(row=1)
+e1 = tkinter.Entry(m)
+e1.grid(row=1, column=1)
+e2 = tkinter.Entry(m)
+e2.grid(row=0, column=1)
+
+startBut = tkinter.Button(m, text='Click to Find Compatability', width=25, command=lambda: comparePlaylists(e1, e2))
+startBut.grid(row=3)
+
+m.mainloop()
+
+#songName1 = topTracks['tracks'][0]['name']
+#print(songName1)
+# import spotipy
+# import spotipy.oauth2 as oauth2
+#
+# def generate_token():
+#     """ Generate the token. Please respect these credentials :) """
+#     credentials = oauth2.SpotifyClientCredentials(
+#         client_id=client_id,
+#         client_secret=client_secret)
+#     token = credentials.get_access_token()
+#     return token
+#
+#
+# def write_tracks(text_file, tracks):
+#     with open(text_file, 'a') as file_out:
+#         while True:
+#             for item in tracks['items']:
+#                 if 'track' in item:
+#                     track = item['track']
+#                 else:
+#                     track = item
+#                 try:
+#                     track_url = track['external_urls']['spotify']
+#                     file_out.write(track_url + '\n')
+#                 except KeyError:
+#                     print(u'Skipping track {0} by {1} (local only?)'.format(
+#                             track['name'], track['artists'][0]['name']))
+#             # 1 page = 50 results
+#             # check if there are more pages
+#             if tracks['next']:
+#                 tracks = spotify.next(tracks)
+#             else:
+#                 break

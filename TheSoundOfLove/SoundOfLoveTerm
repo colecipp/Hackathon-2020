@@ -1,0 +1,110 @@
+import sys
+import os
+import spotipy
+import spotipy.util as util
+import json
+from json.decoder import JSONDecodeError
+
+
+def generateToken():
+    username = 'aoi7fsgjp7ah0mkt6uwk8v8ws'
+    scope = 'user-library-read'
+
+    try:
+        token = util.prompt_for_user_token(username, scope)
+    except:
+        os.remove(f".cache-{username}")
+        token = util.prompt_for_user_token(username)
+    return token
+
+def comparePlaylistSongs(uri1, uri2, spotipy):
+    playlist1 = spotipy.playlist_tracks(uri1, limit=100)
+    playlist2 = spotipy.playlist_tracks(uri2, limit=100)
+
+    user1List = []
+    for i in range(len(playlist1['items'])):
+        user1List.append(playlist1['items'][i]['track']['name'])
+
+    user2List = []
+    for i in range(len(playlist2['items'])):
+        user2List.append(playlist2['items'][i]['track']['name'])
+
+    listSame = []
+    for i in range(len(user1List)):
+        for j in range(len(user2List)):
+            if(user1List[i] == user2List[j] and (user1List[i] not in listSame)):
+                listSame.append(user1List[i])
+    return listSame
+
+def comparePlaylistArtists(uri1, uri2, spotipy):
+    playlist1 = spotipy.playlist_tracks(uri1, limit=100)
+    playlist2 = spotipy.playlist_tracks(uri2, limit=100)
+
+    user1List = []
+    for i in range(len(playlist1['items'])):
+        user1List.append(playlist1['items'][i]['track']['artists'][0]['name'])
+
+    user2List = []
+    for i in range(len(playlist2['items'])):
+        user2List.append(playlist2['items'][i]['track']['artists'][0]['name'])
+
+    listSame = []
+    for i in range(len(user1List)):
+        for j in range(len(user2List)):
+            if(user1List[i] == user2List[j] and (user1List[i] not in listSame)):
+                listSame.append(user1List[i])
+    return listSame
+
+def calculateCompatability(songList, artistList):
+    percenty = (len(songList) + len(artistList))*2
+    if(percenty > 100):
+        percent = 100
+    return percenty
+
+def display(songsList, artistsList):
+    textDisplay = input("To display list of similar songs type L.\nTo display list of similar artists type A.\nTo quit press Q\n")
+    if(textDisplay == "L" or textDisplay == "l"):
+        print("\n-----Similar Songs-----\n")
+        for i in songsList:
+            print(i)
+        print("\n")
+        display(songsList, artistsList)
+    elif(textDisplay == "A" or textDisplay == "a"):
+        print("\n-----Similar Artists-----\n")
+        for i in artistsList:
+            print(i)
+        print("\n")
+        display(songsList, artistsList)
+
+def percentDisplay(percent):
+    if(percent <= 20 ):
+            print("Your compatability is "+ str(percent) +"%" +" it's not meant to be :(\n")
+    if(20 < percent <= 40 ):
+            print("Your compatability is "+ str(percent) +"%" +" things are unlikely to work out between yall\n")
+    if(40 < percent <= 60 ):
+            print("Your compatability is "+ str(percent) +"%" +" you should definitely see where things go\n")
+    if(60 < percent <= 80 ):
+            print("Your compatability is "+ str(percent) +"%" +" I ship yall\n")
+    if(80 < percent <= 100 ):
+            print("Your compatability is "+ str(percent) +"%" +" yall are perfect for each other\n")
+
+
+def Runner():
+    sp = spotipy.Spotify(auth=generateToken())
+
+    playlist1 = input("Enter first playist ID: ")
+    playlist2 = input("Enter second playlist ID: ")
+    sameSongs = comparePlaylistSongs(playlist1, playlist2, sp)
+    sameArtists = comparePlaylistArtists(playlist1, playlist2, sp)
+    print("\n\n")
+    print("You share "+ str(len(sameSongs)) +" similar songs and listen to "+ str(len(sameArtists)) +" of the same artists.\n\n")
+    percent = calculateCompatability(sameSongs, sameArtists)
+    percentDisplay(percent)
+    display(sameSongs, sameArtists)
+
+
+
+    JoeDPlaylist = 'spotify:playlist:110TytrnsmP3oe540B4ebG'
+    AJPlaylist = 'spotify:playlist:4mCKHUwmIjyouzBev3R6KW'
+
+Runner()
